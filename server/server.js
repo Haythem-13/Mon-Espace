@@ -1,13 +1,9 @@
-const http = require('http');
-
-
-
+const express = require('express')
 const port = 5000;
 
-const server=http.createServer((err,res)=>{
-  console.log("request made");
-})
-server.listen(port, () => {
-    console.log('Server listening on port 5000');
+const app=express();
+
+app.listen(port, () => {
+    console.log(`Server startlistening on port ${port}`);
   });
   
