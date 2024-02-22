@@ -1,7 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const connection = require('./connection');
-const auth = require('./middelware/auth');
+// const auth = require('./middelware/auth');
 
 connection();
 const app = express();
@@ -14,9 +14,10 @@ app.use(cors());
 const accountRoute = require('./Routers/accounts');
 
 const { createNewAccounts } = require('./Controllers/accounts');
-const { getAllUsersHistory } = require('./Controllers/bankHistory');
+// const { getAllAccounts } = require('./Controllers/Allusers');
 app.post('/accounts/create', createNewAccounts);
-app.get('/bankhistory', getAllUsersHistory); 
+// app.get('/accounts/getAll', getAllAccounts);
+
 
 app.listen(port, () => {
     console.log(`Server start listening on port ${port}`);
