@@ -33,31 +33,31 @@ const createNewAccounts = async (req, res) => {
   }
 };
 
-// const login = async (req, res) => {
-//   try {
-//     const { username, password } = req.body;
-//     if (!username || !password) {
-//       return res.status(400).json({ msg: "Username and password are required" });
-//     }
-//     const foundAccount = await Accounts.findOne({ username });
-//     if (!foundAccount) {
-//       return res.status(400).json({ msg: 'Invalid username' });
-//     }
-//     const validPassword = await bcrypt.compare(password, foundAccount.password);
-//     if (!validPassword) {
-//       return res.status(400).json({ msg: 'Invalid password' });
-//     }
-//     // Generate token
-//     const token = jwt.sign(
-//       { userId: foundAccount._id, username: foundAccount.username },
-//       process.env.PRIVATE_KEY
-//     );
+const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ msg: "Username and password are required" });
+    }
+    const foundAccount = await Accounts.findOne({ username });
+    if (!foundAccount) {
+      return res.status(400).json({ msg: 'Invalid username' });
+    }
+    const validPassword = await bcrypt.compare(password, foundAccount.password);
+    if (!validPassword) {
+      return res.status(400).json({ msg: 'Invalid password' });
+    }
+    // Generate token
+    const token = jwt.sign(
+      { userId: foundAccount._id, username: foundAccount.username },
+      process.env.PRIVATE_KEY
+    );
     
-//     res.send({ msg: 'Login successful', token ,username});
-//   } catch (error) {
-//     res.status(500).json({ msg: 'An error occurred. Please try again later.', error });
-//   }
-// }
+    res.send({ msg: 'Login successful', token ,username});
+  } catch (error) {
+    res.status(500).json({ msg: 'An error occurred. Please try again later.', error });
+  }
+}
 
 const getAllAccounts = async (req, res) => {
   try {
@@ -77,4 +77,4 @@ const getAllAccounts = async (req, res) => {
 //   }
 // };
 
-module.exports = { createNewAccounts,getAllAccounts  };
+module.exports = { createNewAccounts,getAllAccounts ,login };
