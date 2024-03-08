@@ -15,12 +15,21 @@ const accountSchema = new mongoose.Schema({
         // Check if password contains at least one number
         return /\d/.test(value);
       },
-      message: 'Password must contain at least one number'
-    }
+      message: 'Password must contain at least one number',
+    },
   },
   email: {
     type: String,
-    required: [true, 'Email is required']
+    required: [true, 'Email is required'],
+  },
+  status: {
+    type: String,
+    enum: ['paid', 'unpaid'],
+    default: 'unpaid',
+  },
+  paymentDate: {
+    type: Date,
+    default: null,
   },
 });
 
