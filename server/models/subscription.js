@@ -6,11 +6,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  billingID: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   plan: {
     type: String,
     required: true,

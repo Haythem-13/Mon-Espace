@@ -17,9 +17,9 @@ const createAdmin = async () => {
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash('adminPassword', 10);
       await Admin.create({
-        username: 'admin',
+        username: 'adminUser', // Provide a longer username
+        email: 'admin@example.com',
         password: hashedPassword,
-        // Add any other admin-specific fields you need
       });
       console.log('Admin account created');
     } else {
@@ -32,6 +32,7 @@ const createAdmin = async () => {
 
 // Call the async function
 createAdmin();
+
 
 const createNewAccounts = async (req, res) => {
   console.log("new one created");
