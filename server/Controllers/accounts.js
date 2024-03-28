@@ -43,9 +43,9 @@ const createNewAccounts = async (req, res) => {
     const existingEmail = await Accounts.findOne({ email });
 
     if (existingUsername) {
-      res.status(400).send({ msg: 'Username is already used' });
+      return res.status(400).json({ msg: 'Username is already used' });
     } else if (existingEmail) {
-      res.status(400).send({ msg: 'Email is already used' });
+      return res.status(400).json({ msg: 'Email is already used' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await Accounts.create({
@@ -54,13 +54,14 @@ const createNewAccounts = async (req, res) => {
         password: hashedPassword,
       });
 
-      res.send({ msg: 'Account successfully created', newUser });
+      return res.status(201).json({ msg: 'Account successfully created', newUser });
     } 
   } catch (error) {
     console.error(error);
-    res.status(500).send({ msg: 'Cannot create the account', error });
+    return res.status(500).json({ msg: 'Cannot create the account', error: error.message });
   }
 }
+
 const login = async (req, res) => {
   try {
     const { username, password, role } = req.body;
@@ -78,13 +79,13 @@ const login = async (req, res) => {
     }
 
     if (!foundAccount) {
-      return res.status(400).json({ msg: 'Invalid username' });
+      return res.status(400).json({ msg: 'Invalid username or password' });
     }
 
     const validPassword = await bcrypt.compare(password, foundAccount.password);
 
     if (!validPassword) {
-      return res.status(400).json({ msg: 'Invalid password' });
+      return res.status(400).json({ msg: 'Invalid username or password' });
     }
 
     const token = jwt.sign(
@@ -92,9 +93,10 @@ const login = async (req, res) => {
       process.env.PRIVATE_KEY
     );
 
-    res.send({ msg: 'Login successful', token, username: foundAccount.username, role: role || 'user' });
+    return res.status(200).json({ msg: 'Login successful', token, username: foundAccount.username, role: role || 'user' });
   } catch (error) {
-    res.status(500).json({ msg: 'An error occurred. Please try again later.', error });
+    console.error(error);
+    return res.status(500).json({ msg: 'An error occurred. Please try again later.', error: error.message });
   }
 };
 
