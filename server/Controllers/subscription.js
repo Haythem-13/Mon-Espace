@@ -4,13 +4,13 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const User = require("../models/subscription"); 
 
-const addUser = async ({ email, plan, endDate }) => {
+const addUser = async ({ email, plan, StartDate }) => {
     if (!email || !plan) {
       throw new Error('Missing data, please provide new values');
     }
   
     try {
-      const user = new User({ email, plan, endDate });
+      const user = new User({ email, plan, StartDate });
       const result = await user.save();
       return result;
     } catch (error) {

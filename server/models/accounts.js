@@ -22,15 +22,7 @@ const accountSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Email is required'],
   },
-  status: {
-    type: String,
-    enum: ['paid', 'unpaid'],
-    default: 'unpaid',
-  },
-  paymentDate: {
-    type: Date,
-    default: null,
-  },
+  
 });
 
 const AccountModel = mongoose.model('Accounts', accountSchema);

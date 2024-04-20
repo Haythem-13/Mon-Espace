@@ -43,9 +43,9 @@ const createNewAccounts = async (req, res) => {
     const existingEmail = await Accounts.findOne({ email });
 
     if (existingUsername) {
-      return res.status(400).json({ msg: 'Username is already used' });
+      res.status(400).send({ msg: 'Username is already used' });
     } else if (existingEmail) {
-      return res.status(400).json({ msg: 'Email is already used' });
+      res.status(400).send({ msg: 'Email is already used' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await Accounts.create({
@@ -54,46 +54,39 @@ const createNewAccounts = async (req, res) => {
         password: hashedPassword,
       });
 
-      return res.status(201).json({ msg: 'Account successfully created', newUser });
+      res.send({ msg: 'Account successfully created', newUser });
     } 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: 'Cannot create the account', error: error.message });
+    res.status(500).send({ msg: 'Cannot create the account', error });
   }
 }
-
 const login = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password, email } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ msg: 'Username and password are required' });
+    if (!username || !email || !password) {
+      return res.status(400).json({ msg: 'Username, email, and password are required' });
     }
 
-    let foundAccount;
-
-    if (role === 'admin') {
-      foundAccount = await Admin.findOne({ username });
-    } else {
-      foundAccount = await Accounts.findOne({ username });
-    }
+    const foundAccount = await Accounts.findOne({ username, email });
 
     if (!foundAccount) {
-      return res.status(400).json({ msg: 'Invalid username or password' });
+      return res.status(400).json({ msg: 'Invalid username, email, or password' });
     }
 
     const validPassword = await bcrypt.compare(password, foundAccount.password);
 
     if (!validPassword) {
-      return res.status(400).json({ msg: 'Invalid username or password' });
+      return res.status(400).json({ msg: 'Invalid password' });
     }
 
     const token = jwt.sign(
-      { userId: foundAccount._id, username: foundAccount.username, role: role || 'user' },
+      { userId: foundAccount._id, username: foundAccount.username, email: foundAccount.email },
       process.env.PRIVATE_KEY
     );
 
-    return res.status(200).json({ msg: 'Login successful', token, username: foundAccount.username, role: role || 'user' });
+    return res.status(200).json({ msg: 'Login successful', token, username: foundAccount.username, email: foundAccount.email });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ msg: 'An error occurred. Please try again later.', error: error.message });
@@ -132,13 +125,5 @@ const getAllAccounts = async (req, res) => {
   }
 };
 
-// const getBankHistory = async (req, res) => {
-//   try {
-//     const bankHistory = await BankOperation.find();
-//     res.send(bankHistory);
-//   } catch (error) {
-//     res.status(500).send({ msg: 'Error fetching bank history', error });
-//   }
-// };
 
 module.exports = { createNewAccounts,getAllAccounts ,login,createAdmin };
