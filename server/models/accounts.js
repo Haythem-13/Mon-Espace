@@ -22,6 +22,11 @@ const accountSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Email is required'],
   },
+  StartDate: {
+    type: Date,
+    required: true,
+    default: Date.now(),
+  },
   
 });
 

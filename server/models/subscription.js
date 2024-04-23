@@ -4,15 +4,21 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
   },
-  plan: {
+  discipline: {
     type: String,
     required: true,
   },
-  StartDate: {
+  entryDate: {
     type: Date,
+    required: true,
   },
+  expiryDate: {
+    type: Date,
+    required: true,
+    default: Date.now() + 30 * 24 * 60 * 60 * 1000, // Default to one month from now
+  },
+
 });
 
 const User = mongoose.model('User', userSchema);

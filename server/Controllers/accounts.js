@@ -43,24 +43,35 @@ const createNewAccounts = async (req, res) => {
     const existingEmail = await Accounts.findOne({ email });
 
     if (existingUsername) {
-      res.status(400).send({ msg: 'Username is already used' });
+      return res.status(400).send({ msg: 'Username is already used' });
     } else if (existingEmail) {
-      res.status(400).send({ msg: 'Email is already used' });
+      return res.status(400).send({ msg: 'Email is already used' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await Accounts.create({
         username,
         email,
         password: hashedPassword,
+        StartDate: Date.now(), // Set StartDate to current date
       });
 
-      res.send({ msg: 'Account successfully created', newUser });
+      // Generate token
+      const token = jwt.sign(
+        { userId: newUser._id, username: newUser.username, email: newUser.email },
+        process.env.PRIVATE_KEY
+      );
+
+      // Send response with token
+      return res.status(200).json({ msg: 'Account successfully created', token, username: newUser.username, StartDate: newUser.StartDate , email: newUser.email });
     } 
   } catch (error) {
     console.error(error);
-    res.status(500).send({ msg: 'Cannot create the account', error });
+    return res.status(500).send({ msg: 'Cannot create the account', error });
   }
 }
+
+
+
 const login = async (req, res) => {
   try {
     const { username, password, email } = req.body;

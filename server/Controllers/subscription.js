@@ -4,20 +4,27 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const User = require("../models/subscription"); 
 
-const addUser = async ({ email, plan, StartDate }) => {
-    if (!email || !plan) {
-      throw new Error('Missing data, please provide new values');
-    }
-  
-    try {
-      const user = new User({ email, plan, StartDate });
-      const result = await user.save();
-      return result;
-    } catch (error) {
-      console.error('Error adding user:', error);
-      throw error; // rethrow the error to be caught by the route handler
-    }
-  };
+const addMembership = async ({ email, entryDate }) => {
+  if (!email || !entryDate) {
+    throw new Error('Missing data, please provide new values');
+  }
+
+  try {
+    const currentDate = new Date();
+    const user = new User({
+      email,
+      entryDate,
+      expiryDate: new Date(entryDate.getFullYear(), entryDate.getMonth() + 1, entryDate.getDate()),
+      StartDate: currentDate 
+    });
+    const result = await user.save();
+    return result;
+  } catch (error) {
+    console.error('Error adding user:', error);
+    throw error;
+  }
+};
+
   
 
 const getUsers = (User) => async () => {
@@ -31,4 +38,4 @@ const getUserByEmail = (User) => async (email) => {
 const updatePlan = (User) => async (email, newPlan) => {
     return await User.findOneAndUpdate({ email }, { plan: newPlan }, { new: true });
 };
-module.exports = { addUser,getUsers ,getUserByEmail,updatePlan };
+module.exports = { addMembership,getUsers ,getUserByEmail,updatePlan };
