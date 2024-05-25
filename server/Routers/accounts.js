@@ -1,11 +1,12 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const verifyToken =require("../middelware/auth")
-const { getAllAccounts, createNewAccounts, login , } = require("../Controllers/accounts");
+const verifyToken = require('../middelware/auth');
 
-router.post("/login", login);
-router.post("/create", createNewAccounts); 
-router.get("/", getAllAccounts);
+const { createNewAccount, getAllAccounts, login, createAdmin } = require('../controllers/accounts');
 
+router.post('/register', createAdmin);
+router.post('/create', createNewAccount);
+router.post('/login', login);
+router.get('/', verifyToken, getAllAccounts);
 
 module.exports = router;

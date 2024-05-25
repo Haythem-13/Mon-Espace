@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-  },
+const membershipSchema = new mongoose.Schema({
   discipline: {
     type: String,
     required: true,
@@ -16,11 +12,19 @@ const userSchema = new mongoose.Schema({
   expiryDate: {
     type: Date,
     required: true,
-    default: Date.now() + 30 * 24 * 60 * 60 * 1000, // Default to one month from now
+    default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   },
+});
 
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    // unique: true, // Ensure unique emails
+  },
+  memberships: [membershipSchema], 
 });
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+module.exports = { User, membershipSchema }; // 

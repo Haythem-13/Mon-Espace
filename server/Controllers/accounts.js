@@ -2,40 +2,30 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt')
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-// const BankOperation = require("../models/bankoperations");
-const Accounts = require("../models/accounts"); 
+const Accounts = require('../models/accounts');
 
-
-
-// In a separate script or during server initialization
-const Admin = require("../models/accounts")
-
-const createAdmin = async () => {
+const createAdmin = async (req, res) => {
   try {
-    const existingAdmin = await Admin.findOne({ username: 'admin' });
+    const existingAdmin = await Accounts.findOne({ username: 'adminUser' });
 
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash('adminPassword', 10);
-      await Admin.create({
-        username: 'adminUser', // Provide a longer username
+      const admin = await Accounts.create({
+        username: 'adminUser',
         email: 'admin@example.com',
         password: hashedPassword,
       });
-      console.log('Admin account created');
+      res.status(201).json({ msg: 'Admin account created', admin });
     } else {
-      console.log('Admin account already exists');
+      res.status(400).json({ msg: 'Admin account already exists' });
     }
   } catch (error) {
     console.error('Error creating admin account:', error);
+    res.status(500).json({ msg: 'Error creating admin account', error });
   }
 };
 
-// Call the async function
-createAdmin();
-
-
-const createNewAccounts = async (req, res) => {
-  console.log("new one created");
+const createNewAccount = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -52,89 +42,56 @@ const createNewAccounts = async (req, res) => {
         username,
         email,
         password: hashedPassword,
-        StartDate: Date.now(), // Set StartDate to current date
+        startDate: Date.now(),
       });
 
-      // Generate token
       const token = jwt.sign(
         { userId: newUser._id, username: newUser.username, email: newUser.email },
         process.env.PRIVATE_KEY
       );
 
-      // Send response with token
-      return res.status(200).json({ msg: 'Account successfully created', token, username: newUser.username, StartDate: newUser.StartDate , email: newUser.email });
-    } 
+      return res.status(200).json({ msg: 'Account successfully created', token, user: newUser });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).send({ msg: 'Cannot create the account', error });
   }
-}
-
-
+};
 
 const login = async (req, res) => {
   try {
     const { username, password, email } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ msg: 'Username, email, and password are required' });
+    const user = await Accounts.findOne({ username, email });
+    if (!user) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
-    const foundAccount = await Accounts.findOne({ username, email });
-
-    if (!foundAccount) {
-      return res.status(400).json({ msg: 'Invalid username, email, or password' });
-    }
-
-    const validPassword = await bcrypt.compare(password, foundAccount.password);
-
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(400).json({ msg: 'Invalid password' });
+      return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
-      { userId: foundAccount._id, username: foundAccount.username, email: foundAccount.email },
+      { userId: user._id, username: user.username, email: user.email },
       process.env.PRIVATE_KEY
     );
 
-    return res.status(200).json({ msg: 'Login successful', token, username: foundAccount.username, email: foundAccount.email });
+    return res.status(200).json({ msg: 'Login successful', token });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ msg: 'An error occurred. Please try again later.', error: error.message });
+    res.status(500).json({ msg: 'An error occurred. Please try again later.' });
   }
 };
-
 
 const getAllAccounts = async (req, res) => {
   try {
-    const { status } = req.query;
-
-    let filter = {};
-    if (status === 'paid' || status === 'unpaid') {
-      filter = { status };
-    }
-
-    const allAccounts = await Accounts.find(filter);
-    const currentDate = new Date();
-
-    // If filtering by unpaid, update status for accounts that need renewal
-    if (status === 'unpaid') {
-      for (const account of allAccounts) {
-        if (!account.paymentDate || currentDate > account.paymentDate) {
-          // Mark the account as paid and set paymentDate for the next month
-          await Accounts.findByIdAndUpdate(account._id, {
-            status: 'paid',
-            paymentDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
-          });
-        }
-      }
-    }
-
-    res.send(allAccounts);
+    const accounts = await Accounts.find({});
+    res.status(200).json(accounts);
   } catch (error) {
-    res.send({ msg: "Cannot retrieve accounts", error });
+    console.error(error);
+    res.status(500).json({ msg: 'Cannot retrieve accounts', error });
   }
 };
 
-
-module.exports = { createNewAccounts,getAllAccounts ,login,createAdmin };
+module.exports = { createNewAccount, getAllAccounts, login, createAdmin };
